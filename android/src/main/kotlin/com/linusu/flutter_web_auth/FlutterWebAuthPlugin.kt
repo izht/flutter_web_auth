@@ -17,6 +17,8 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 class FlutterWebAuthPlugin(private val context: Context): MethodCallHandler {
   companion object {
     public val callbacks = HashMap<String, Result>()
+    public var urlScheme: String? = null
+    public var tabOpened = false
 
     @JvmStatic
     fun registerWith(registrar: Registrar) {
@@ -31,6 +33,7 @@ class FlutterWebAuthPlugin(private val context: Context): MethodCallHandler {
       val callbackUrlScheme = call.argument<String>("callbackUrlScheme")!!
 
       callbacks.put(callbackUrlScheme, result)
+      urlScheme = callbackUrlScheme
 
       val intent = CustomTabsIntent.Builder().build()
       val keepAliveIntent = Intent().setClassName(context.getPackageName(), KeepAliveService::class.java.canonicalName)
@@ -38,6 +41,7 @@ class FlutterWebAuthPlugin(private val context: Context): MethodCallHandler {
       intent.intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_TASK)
       intent.intent.putExtra("android.support.customtabs.extra.KEEP_ALIVE", keepAliveIntent)
 
+      tabOpened = true
       intent.launchUrl(context, url)
     } else {
       result.notImplemented()
